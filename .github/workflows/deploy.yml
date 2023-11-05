@@ -1,0 +1,27 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ "production" ]
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the repo
+      uses: actions/checkout@v3
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        port: ${{ secrets.PORT }}
+        key: ${{ secrets.KEY }}
+        script: |
+          cd ${{ secrets.PATH }}
+          git stash
+          git pull origin production
+          ~/.nvm/versions/node/v18.16.0/bin/npm ci --force || ~/.nvm/versions/node/v18.16.0/bin/npm install 
+          ~/.nvm/versions/node/v18.16.0/bin/pm2 restart konect
